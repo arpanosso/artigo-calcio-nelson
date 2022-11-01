@@ -1,0 +1,164 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  warning = FALSE,
+  error = FALSE,
+  message = FALSE
+)
+```
+
+# Carregando Pacotes
+```{r}
+library(tidyverse)
+library(ggpubr)
+```
+
+# Entrada de dados
+```{r}
+dados <- readxl::read_xlsx("data/BodyComposition.xlsx") %>% 
+  janitor::clean_names()
+glimpse(dados)
+```
+# Médias com respectivos desvio padrões
+
+```{r}
+dados %>% 
+  group_by(nivel_ca) %>% 
+  summarise(
+    ltw_media = mean(ltw, na.rm=TRUE),
+    ltw_DP = sd(ltw, na.rm=TRUE),
+    rtw_media = mean(rtw, na.rm=TRUE),
+    rtw_DP = sd(rtw, na.rm=TRUE),
+    tbs_media = mean(tbs, na.rm=TRUE),
+    tbs_DP = sd(tbs, na.rm=TRUE)
+  )
+```
+
+## Análise de regressão para $ltw$ 
+
+### Linear
+
+```{r}
+modelo <- lm(ltw ~ nivel_ca,
+             data=dados)
+summary(modelo)
+dados %>% 
+  group_by(nivel_ca) %>% 
+  summarise(
+    ltw = mean(ltw)
+  ) %>% 
+  ggscatter(x = "nivel_ca", y = "ltw", add = "reg.line") +
+  stat_cor(label.x = 3, label.y = 7.75) +
+  stat_regline_equation(label.x = 3, label.y = 7.65) +
+  ylim(c(7.25,8.5)) +
+  theme_bw()
+```
+
+### Quadrático
+```{r}
+modelo <- lm(ltw ~ nivel_ca + nivel_ca2,
+             data=dados %>% 
+               mutate(
+               nivel_ca2 = nivel_ca^2)
+)
+dados %>% 
+  group_by(nivel_ca) %>% 
+  summarise(
+    ltw = mean(ltw)
+  ) %>% 
+  ggplot(aes(x = nivel_ca, y=ltw)) +
+  geom_point() +
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2),se=FALSE) +
+  stat_regline_equation(aes(label =  paste(..eq.label.., ..adj.rr.label.., sep = "~~~~")),formula = y ~ x + I(x^2)) +
+  ylim(c(7.25,8.5)) +
+  theme_bw()
+```
+
+
+
+## Análise de regressão para $rtw$ 
+
+### Linear
+
+```{r}
+modelo <- lm(rtw ~ nivel_ca,
+             data=dados)
+summary(modelo)
+dados %>% 
+  group_by(nivel_ca) %>% 
+  summarise(
+    rtw = mean(rtw)
+  ) %>% 
+  ggscatter(x = "nivel_ca", y = "rtw", add = "reg.line") +
+  stat_cor(label.x = 3, label.y = 7.75) +
+  stat_regline_equation(label.x = 3, label.y = 7.65) +
+  ylim(c(7.25,8.5)) +
+  theme_bw()
+```
+
+### Quadrático
+```{r}
+modelo <- lm(rtw ~ nivel_ca + nivel_ca2,
+             data=dados %>% 
+               mutate(
+               nivel_ca2 = nivel_ca^2)
+)
+summary(modelo)
+dados %>% 
+  group_by(nivel_ca) %>% 
+  summarise(
+    rtw = mean(rtw)
+  ) %>% 
+  ggplot(aes(x = nivel_ca, y=rtw)) +
+  geom_point() +
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2),se=FALSE) +
+  stat_regline_equation(aes(label =  paste(..eq.label.., ..adj.rr.label.., sep = "~~~~")),formula = y ~ x + I(x^2)) +
+  ylim(c(7.25,8.5)) +
+  theme_bw()
+```
+
+## Análise de regressão para $tbs$ 
+
+### Linear
+
+```{r}
+modelo <- lm(tbs ~ nivel_ca,
+             data=dados)
+summary(modelo)
+dados %>% 
+  group_by(nivel_ca) %>% 
+  summarise(
+    tbs = mean(tbs)
+  ) %>% 
+  ggscatter(x = "nivel_ca", y = "tbs", add = "reg.line") +
+  stat_cor(label.x = 3, label.y = 12) +
+  stat_regline_equation(label.x = 3, label.y = 11.5)+
+  theme_bw()
+```
+
+### Quadrático
+```{r}
+modelo <- lm(tbs ~ nivel_ca + nivel_ca2,
+             data=dados %>% 
+               mutate(
+               nivel_ca2 = nivel_ca^2)
+)
+summary(modelo)
+dados %>% 
+  group_by(nivel_ca) %>% 
+  summarise(
+    tbs = mean(tbs)
+  ) %>% 
+  ggplot(aes(x = nivel_ca, y=tbs)) +
+  geom_point() +
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2),se=FALSE) +
+  stat_regline_equation(aes(label =  paste(..eq.label.., ..adj.rr.label.., sep = "~~~~")),formula = y ~ x + I(x^2)) +
+  theme_bw()
+```
